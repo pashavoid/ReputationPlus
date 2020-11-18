@@ -7,7 +7,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
-import ru.pashavoid.reputationplus.gui.PlayerGUI;
 import ru.pashavoid.reputationplus.utils.Log;
 import ru.pashavoid.reputationplus.utils.MySQL;
 
