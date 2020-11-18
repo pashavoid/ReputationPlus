@@ -5,6 +5,8 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import ru.pashavoid.reputationplus.ReputationPlus;
 
 import java.io.File;
@@ -29,6 +31,10 @@ public class MySQL {
     private static FileConfiguration databaseConfig;
 
     public static HashMap<UUID, Integer> cache = new HashMap<>();
+
+    public MySQL(){
+
+    }
 
     public static void createDatabaseFile() {
         database = new File(plugin.getDataFolder(), "database.yml");
@@ -154,5 +160,21 @@ public class MySQL {
         } else {
             cache.put(uuid, 0);
         }
+    }
+
+    public static void setPossible(UUID player, UUID per) throws SQLException {
+        JSONObject json = getPossible(player);
+        json.put(player, per);
+
+        PreparedStatement ps = getConnection().prepareStatement("UPDATE reputation SET `possible` = ? WHERE `uuid` = ?");
+        ps.setArray(1, (Array) json);
+        ps.setString(2, String.valueOf(player));
+    }
+
+    public static JSONObject getPossible(UUID player) throws SQLException {
+        PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM reputation WHERE uuid = ?");
+        ps.setString(1, String.valueOf(player));
+        ResultSet rs = ps.executeQuery();
+        return (JSONObject) rs.getArray("possible");
     }
 }
