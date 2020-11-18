@@ -9,7 +9,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import ru.pashavoid.reputationplus.utils.Log;
+import ru.pashavoid.reputationplus.utils.MySQL;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +26,6 @@ public class Commands implements CommandExecutor, Listener {
     public Commands(ReputationPlus instance) {
         this.plugin = instance;
     }
-
-    //test
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -47,6 +48,16 @@ public class Commands implements CommandExecutor, Listener {
                 }
             }
             inv = new ScrollerInventory(items, "[Reputation+] Players", player);
+        } else {
+            if (args.length == 1 && args[0].equals("clearcache")) {
+                try {
+                    MySQL.updateCache();
+                    Log log = new Log(plugin);
+                    log.sendApproved("[Reputation+]", "Cache was clear");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return true;
     }

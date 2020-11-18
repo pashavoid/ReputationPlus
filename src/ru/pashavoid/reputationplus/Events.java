@@ -44,13 +44,13 @@ public class Events implements Listener {
             p.openInventory(playerGUI.getInventory());
         }
         if(e.getView().getTitle().equals("[Reputation+] Interact player")){
-            String name = e.getCurrentItem().getItemMeta().getDisplayName();
+            String name = e.getView().getItem(5).getItemMeta().getDisplayName();
             UUID uuid = players.get(name);
 
-            if(e.getSlot() == 6){
+            if(e.getCurrentItem().getType().equals(Material.GREEN_TERRACOTTA)){
                 MySQL.setReputation(uuid, 1);
             }
-            if(e.getSlot() == 4){
+            if(e.getCurrentItem().getType().equals(Material.RED_TERRACOTTA)){
                 MySQL.setReputation(uuid, -1);
             }
             e.setCancelled(true);
