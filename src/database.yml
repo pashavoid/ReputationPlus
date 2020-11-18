@@ -1,0 +1,19 @@
+#
+#     Reputation+ 1.0 beta
+#     Author by pashavoid
+#     File: database.yml
+#
+# WARNING: The plugin only supports MySQL ;-(
+# If you test the plugin once, you don't need to specify the database.
+# All reputation is cached in memory and will be deleted when turned off.
+
+# MySql IP address or domain
+host: localhost
+# MySQL name database
+database: test
+# MySQL username
+username: root
+# MySQL user password
+password: root
+# Do not touch the standard port. If a different port is used to connect to the database, specify it.
+port: '3306'
