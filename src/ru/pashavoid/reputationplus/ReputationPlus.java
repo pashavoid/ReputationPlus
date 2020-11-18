@@ -31,7 +31,7 @@ public class ReputationPlus extends JavaPlugin implements Listener, CommandExecu
         log.sendApproved("[Reputation+]", "Successful initialization of the plugin");
 
         getCommand("reputation").setExecutor(new Commands(this));
-        getServer().getPluginManager().registerEvents(new Events(), this);
+        getServer().getPluginManager().registerEvents(new Events(this), this);
 
         createSettingsFile();
 
@@ -47,7 +47,6 @@ public class ReputationPlus extends JavaPlugin implements Listener, CommandExecu
                     e.printStackTrace();
                 }
                 log.sendApproved("[Reputation+]", "Successful connection to the database. The plugin cache was cleared");
-                MySQL.cache.clear();
             }
         }, 0L, 1200L);
     }

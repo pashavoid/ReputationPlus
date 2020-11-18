@@ -83,22 +83,28 @@ public class MySQL {
 
 
     public static void updateCache() throws SQLException {
-        Iterator<Map.Entry<UUID, Integer>> iterator = cache.entrySet().iterator();
 
+        Iterator<Map.Entry<UUID, Integer>> iterator = cache.entrySet().iterator();
+        Log log = new Log(plugin);
         for(int i = 0; ; i++){
             if(iterator.hasNext()){
                 Map.Entry<UUID, Integer> entry = iterator.next();
                 UUID uuid = entry.getKey();
                 int Reputation = entry.getValue();
 
+                log.sendApproved("[Test]", String.valueOf(uuid));
+                log.sendApproved("[Test]", String.valueOf(Reputation));
                 ResultSet rs = searchPlayer(uuid).executeQuery();
                 if(!rs.next()){
                     addPlayer(uuid, Reputation);
+                    log.sendApproved("", "addPlayer");
                 } else {
                     updatePlayer(uuid, Reputation);
+                    log.sendApproved("", "updatePlayer");
                 }
             } else break;
         }
+        cache.clear();
     }
 
     private static PreparedStatement searchPlayer(UUID uuid) throws SQLException {
@@ -140,9 +146,11 @@ public class MySQL {
         ResultSet rs = ps.executeQuery();
         if(rs.next()){
             cache.put(uuid, rs.getInt("rep") + rep);
+            return;
         }
-        if (cache.get(uuid) != null){
+        if (cache.get(uuid) != null) {
             cache.put(uuid, cache.get(uuid) + rep);
+            return;
         } else {
             cache.put(uuid, 0);
         }

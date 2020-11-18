@@ -19,6 +19,11 @@ public class Events implements Listener {
 
     public PlayerGUI playerGUI;
     private HashMap<String, UUID> players = new HashMap<String, UUID>();
+    private ReputationPlus plugin;
+
+    public Events(ReputationPlus plugin){
+        this.plugin = plugin;
+    }
 
     @EventHandler
     public void PlayerJoin(PlayerJoinEvent e) throws SQLException {
@@ -35,7 +40,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) throws SQLException {
-        if(e.getView().getTitle().equals("[Reputation+] Players")){
+        if(e.getView().getTitle().equals("[Reputation+] Players")) {
             e.setCancelled(true);
             final Player p = (Player) e.getWhoClicked();
             final ItemStack clickedItem = e.getCurrentItem();
@@ -43,10 +48,12 @@ public class Events implements Listener {
             playerGUI = new PlayerGUI(p, clickedItem);
             p.openInventory(playerGUI.getInventory());
         }
+
         if(e.getView().getTitle().equals("[Reputation+] Interact player")){
+
             String name = e.getView().getItem(5).getItemMeta().getDisplayName();
             UUID uuid = players.get(name);
-
+            if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
             if(e.getCurrentItem().getType().equals(Material.GREEN_TERRACOTTA)){
                 MySQL.setReputation(uuid, 1);
             }
