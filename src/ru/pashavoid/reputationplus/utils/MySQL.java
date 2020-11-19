@@ -5,8 +5,6 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import ru.pashavoid.reputationplus.ReputationPlus;
 
 import java.io.File;
@@ -63,6 +61,9 @@ public class MySQL {
                         + databaseConfig.getString("host")
                         + ":" + databaseConfig.getString("port")
                         + "/" + databaseConfig.getString("database"), databaseConfig.getString("username"), databaseConfig.getString("password"));
+                if(reputationExist()){
+                    createReputationTable();
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -87,6 +88,28 @@ public class MySQL {
         return connection;
     }
 
+    private static Boolean reputationExist() throws SQLException {
+        DatabaseMetaData dbm = connection.getMetaData();
+        ResultSet rs = dbm.getTables(null, null, "reputation", null);
+        return !rs.next();
+    }
+
+    private static void createReputationTable() throws SQLException {
+        PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS reputation (id INT NOT NULL AUTO_INCREMENT, UUID VARCHAR(36), rep INT, PRIMARY KEY(`id`))");
+        ps.executeUpdate();
+    }
+
+    private static Boolean possibleExist() throws SQLException {
+        DatabaseMetaData dbm = connection.getMetaData();
+        ResultSet rs = dbm.getTables(null, null, "possible", null);
+        return !rs.next();
+    }
+
+    private static void createPossibleTable() throws SQLException {
+        PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS possible (id INT NOT NULL AUTO_INCREMENT, uuidwho VARCHAR(36), uuidwhom VARCHAR(36), thereis BOOLEAN, PRIMARY KEY(`id`))");
+        ps.executeUpdate();
+    }
+
 
     public static void updateCache() throws SQLException {
 
@@ -98,15 +121,11 @@ public class MySQL {
                 UUID uuid = entry.getKey();
                 int Reputation = entry.getValue();
 
-                log.sendApproved("[Test]", String.valueOf(uuid));
-                log.sendApproved("[Test]", String.valueOf(Reputation));
                 ResultSet rs = searchPlayer(uuid).executeQuery();
                 if(!rs.next()){
                     addPlayer(uuid, Reputation);
-                    log.sendApproved("", "addPlayer");
                 } else {
                     updatePlayer(uuid, Reputation);
-                    log.sendApproved("", "updatePlayer");
                 }
             } else break;
         }
@@ -162,19 +181,30 @@ public class MySQL {
         }
     }
 
-    public static void setPossible(UUID player, UUID per) throws SQLException {
-        JSONObject json = getPossible(player);
-        json.put(player, per);
-
-        PreparedStatement ps = getConnection().prepareStatement("UPDATE reputation SET `possible` = ? WHERE `uuid` = ?");
-        ps.setArray(1, (Array) json);
-        ps.setString(2, String.valueOf(player));
+    public static Boolean getDidVote(UUID uuidwho, UUID uuidwhom) throws SQLException {
+        PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM possible WHERE uuidwho = ? AND uuidwhom = ?");
+        ps.setString(1, String.valueOf(uuidwho));
+        ps.setString(2, String.valueOf(uuidwhom));
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()){
+            return rs.getBoolean("thereis");
+        } else {
+            return null;
+        }
     }
 
-    public static JSONObject getPossible(UUID player) throws SQLException {
-        PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM reputation WHERE uuid = ?");
-        ps.setString(1, String.valueOf(player));
-        ResultSet rs = ps.executeQuery();
-        return (JSONObject) rs.getArray("possible");
+    public static void setDidVote(UUID uuidwho, UUID uuidwhom, boolean thereis) throws SQLException {
+        Bukkit.getConsoleSender().sendMessage(String.valueOf(getDidVote(uuidwho, uuidwhom)));
+        if(getDidVote(uuidwho, uuidwhom) == null){
+            PreparedStatement ps = getConnection().prepareStatement("INSERT INTO possible (id, uuidwho, uuidwhom, thereis) VALUES (NULL, ?, ?, ?)");
+            ps.setString(1, String.valueOf(uuidwho));
+            ps.setString(2, String.valueOf(uuidwhom));
+            ps.setBoolean(3, thereis);
+            ps.executeUpdate();
+        }
+        PreparedStatement ps = getConnection().prepareStatement("UPDATE possible SET thereis = ? WHERE uuidwho = ? AND uuidwhom = ?");
+        ps.setBoolean(1, thereis);
+        ps.setString(2, String.valueOf(uuidwho));
+        ps.setString(3, String.valueOf(uuidwhom));
     }
 }
