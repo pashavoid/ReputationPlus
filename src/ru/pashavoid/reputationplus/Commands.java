@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import ru.pashavoid.reputationplus.gui.ScrollerGUI;
 import ru.pashavoid.reputationplus.utils.Log;
 import ru.pashavoid.reputationplus.utils.MySQL;
 
@@ -21,7 +22,7 @@ public class Commands implements CommandExecutor, Listener {
     private ReputationPlus plugin;
     private final List<String> lore = new ArrayList<String>();
     private ArrayList<ItemStack> items = new ArrayList<ItemStack>();
-    public static ScrollerInventory inv;
+    public static ScrollerGUI inv;
 
     public Commands(ReputationPlus instance) {
         this.plugin = instance;
@@ -36,9 +37,9 @@ public class Commands implements CommandExecutor, Listener {
             lore.add("Click on the player to interact with them");
             items.clear();
 
-            for (Player pl : Bukkit.getOnlinePlayers()) {
+            Bukkit.getOnlinePlayers().forEach(pl -> {
                 ItemStack skull = new ItemStack(Material.PLAYER_HEAD, 1);
-                if(!items.contains(skull)) {
+                if (!items.contains(skull)) {
                     SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
                     skullMeta.setDisplayName(pl.getDisplayName());
                     skullMeta.setLore(lore);
@@ -46,8 +47,8 @@ public class Commands implements CommandExecutor, Listener {
                     skull.setItemMeta(skullMeta);
                     items.add(skull);
                 }
-            }
-            inv = new ScrollerInventory(items, "[Reputation+] Players", player);
+            });
+            inv = new ScrollerGUI(items, "[Reputation+] Players", player);
         } else {
             if (args.length == 1 && args[0].equals("clearcache")) {
                 try {

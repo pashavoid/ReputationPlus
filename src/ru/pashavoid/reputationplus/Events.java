@@ -8,9 +8,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import ru.pashavoid.reputationplus.gui.PlayerGUI;
+import ru.pashavoid.reputationplus.gui.ScrollerGUI;
 import ru.pashavoid.reputationplus.utils.MySQL;
 
 import java.sql.SQLException;
@@ -43,18 +43,35 @@ public class Events implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) throws SQLException {
         if(e.getView().getTitle().equals("[Reputation+] Players")) {
-            e.setCancelled(true);
-            final Player p = (Player) e.getWhoClicked();
+            if(!(e.getWhoClicked() instanceof Player)) return;
+            Player p = (Player) e.getWhoClicked();
+            if(!ScrollerGUI.users.containsKey(p.getUniqueId())) return;
+            ScrollerGUI inv = ScrollerGUI.users.get(p.getUniqueId());
             final ItemStack clickedItem = e.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
-            if(e.getCurrentItem().getType().equals(Material.ACACIA_BOAT)){
-                ScrollerInventory inv = ScrollerInventory.users.get(p.getUniqueId());
-                return;
+            if(clickedItem == null) return;
+            if(clickedItem.getItemMeta() == null || clickedItem.getType() == Material.AIR) return;
+            if(clickedItem.getItemMeta().getDisplayName() == null) return;
+            if(clickedItem.getItemMeta().getDisplayName().equals(ScrollerGUI.nextPageName)){
+                e.setCancelled(true);
+                if(inv.currpage >= inv.pages.size()-1){
+                    return;
+                } else {
+                    inv.currpage += 1;
+                    p.openInventory(inv.pages.get(inv.currpage));
+                }
+            } else if(e.getCurrentItem().getItemMeta().getDisplayName().equals(ScrollerGUI.previousPageName)){
+                e.setCancelled(true);
+                if(inv.currpage > 0){
+                    inv.currpage -= 1;
+                    p.openInventory(inv.pages.get(inv.currpage));
+                }
             }
-            playerGUI = new PlayerGUI(p, clickedItem);
-            p.openInventory(playerGUI.getInventory());
+            if(e.getCurrentItem().getType().equals(Material.PLAYER_HEAD)) {
+                e.setCancelled(true);
+                playerGUI = new PlayerGUI(p, clickedItem);
+                p.openInventory(playerGUI.getInventory());
+            }
         }
-
         if(e.getView().getTitle().equals("[Reputation+] Interact player")){
 
             String name = e.getView().getItem(5).getItemMeta().getDisplayName();
