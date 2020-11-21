@@ -32,19 +32,19 @@ public class PlayerGUI {
         skullhead.setLore(lore);
         skullhead.setOwningPlayer(o);
         head.setItemMeta(skullhead);
-        inv.setItem(5, head);
+        inv.setItem(4, head);
 
         ItemStack like = new ItemStack(Material.GREEN_TERRACOTTA, 1);
         ItemMeta likemeta = like.getItemMeta();
         likemeta.setDisplayName("[Reputation+] Like");
         like.setItemMeta(likemeta);
-        inv.setItem(6, like);
+        inv.setItem(3, like);
 
         ItemStack dislike = new ItemStack(Material.RED_TERRACOTTA, 1);
         ItemMeta dislikemeta = like.getItemMeta();
         dislikemeta.setDisplayName("[Reputation+] Dislike");
         dislike.setItemMeta(dislikemeta);
-        inv.setItem(4, dislike);
+        inv.setItem(5, dislike);
 
         this.inv = inv;
     }

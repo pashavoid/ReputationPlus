@@ -95,7 +95,7 @@ public class MySQL {
     }
 
     private static void createReputationTable() throws SQLException {
-        PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS reputation (id INT NOT NULL AUTO_INCREMENT, UUID VARCHAR(36), rep INT, PRIMARY KEY(`id`))");
+        PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS reputation (id INT NOT NULL AUTO_INCREMENT, UUID VARCHAR(36) NOT NULL, rep INT NOT NULL, PRIMARY KEY(`id`))");
         ps.executeUpdate();
     }
 
@@ -106,7 +106,7 @@ public class MySQL {
     }
 
     private static void createPossibleTable() throws SQLException {
-        PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS possible (id INT NOT NULL AUTO_INCREMENT, uuidwho VARCHAR(36), uuidwhom VARCHAR(36), thereis BOOLEAN, PRIMARY KEY(`id`))");
+        PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS possible (id INT NOT NULL AUTO_INCREMENT, uuidwho VARCHAR(36) NOT NULL, uuidwhom VARCHAR(36) NOT NULL, yes TINYINT NOT NULL, PRIMARY KEY(`id`))");
         ps.executeUpdate();
     }
 
@@ -181,29 +181,28 @@ public class MySQL {
         }
     }
 
-    public static Boolean getDidVote(UUID uuidwho, UUID uuidwhom) throws SQLException {
+    public static Short getDidVote(UUID uuidwho, UUID uuidwhom) throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM possible WHERE uuidwho = ? AND uuidwhom = ?");
         ps.setString(1, String.valueOf(uuidwho));
         ps.setString(2, String.valueOf(uuidwhom));
         ResultSet rs = ps.executeQuery();
         if (rs.next()){
-            return rs.getBoolean("thereis");
+            return rs.getShort("yes");
         } else {
-            return null;
+            return 2;
         }
     }
 
-    public static void setDidVote(UUID uuidwho, UUID uuidwhom, boolean thereis) throws SQLException {
-        Bukkit.getConsoleSender().sendMessage(String.valueOf(getDidVote(uuidwho, uuidwhom)));
-        if(getDidVote(uuidwho, uuidwhom) == null){
-            PreparedStatement ps = getConnection().prepareStatement("INSERT INTO possible (id, uuidwho, uuidwhom, thereis) VALUES (NULL, ?, ?, ?)");
+    public static void setDidVote(UUID uuidwho, UUID uuidwhom, short yes) throws SQLException {
+        if(getDidVote(uuidwho, uuidwhom) == 2){
+            PreparedStatement ps = getConnection().prepareStatement("INSERT INTO possible (id, uuidwho, uuidwhom, yes) VALUES (NULL, ?, ?, ?)");
             ps.setString(1, String.valueOf(uuidwho));
             ps.setString(2, String.valueOf(uuidwhom));
-            ps.setBoolean(3, thereis);
+            ps.setShort(3, yes);
             ps.executeUpdate();
         }
-        PreparedStatement ps = getConnection().prepareStatement("UPDATE possible SET thereis = ? WHERE uuidwho = ? AND uuidwhom = ?");
-        ps.setBoolean(1, thereis);
+        PreparedStatement ps = getConnection().prepareStatement("UPDATE possible SET yes = ? WHERE uuidwho = ? AND uuidwhom = ?");
+        ps.setShort(1, yes);
         ps.setString(2, String.valueOf(uuidwho));
         ps.setString(3, String.valueOf(uuidwhom));
     }

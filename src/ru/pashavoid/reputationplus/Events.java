@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import ru.pashavoid.reputationplus.gui.PlayerGUI;
 import ru.pashavoid.reputationplus.utils.MySQL;
@@ -46,6 +47,10 @@ public class Events implements Listener {
             final Player p = (Player) e.getWhoClicked();
             final ItemStack clickedItem = e.getCurrentItem();
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+            if(e.getCurrentItem().getType().equals(Material.ACACIA_BOAT)){
+                ScrollerInventory inv = ScrollerInventory.users.get(p.getUniqueId());
+                return;
+            }
             playerGUI = new PlayerGUI(p, clickedItem);
             p.openInventory(playerGUI.getInventory());
         }
@@ -56,25 +61,31 @@ public class Events implements Listener {
             UUID uuidwhom = players.get(name);
             UUID uuidwho = e.getWhoClicked().getUniqueId();
             if (e.getCurrentItem() == null || e.getCurrentItem().getType().equals(Material.AIR)) return;
-            if(MySQL.getDidVote(uuidwho, uuidwhom) == null) return; // попозже
-            boolean thereis = MySQL.getDidVote(uuidwho, uuidwhom);
+            short yes = MySQL.getDidVote(uuidwho, uuidwhom);
+            Material clickeditem = e.getCurrentItem().getType();
 
-            if(e.getCurrentItem().getType().equals(Material.GREEN_TERRACOTTA)){
-                if (!thereis) {
-                    MySQL.setReputation(uuidwhom, 1);
-                    MySQL.setDidVote(uuidwho, uuidwhom, true);
-                } else {
+            if(clickeditem.equals(Material.GREEN_TERRACOTTA) || clickeditem.equals(Material.RED_TERRACOTTA) && uuidwho == uuidwhom){
+                String itsyou = "You can't vote for yourself.";
+                e.getWhoClicked().sendMessage(ChatColor.DARK_AQUA + "[Reputation+] " + ChatColor.RED + itsyou);
+                e.setCancelled(true);
+                return;
+            }
+            if(clickeditem.equals(Material.GREEN_TERRACOTTA)){
+                if (yes == 1) {
                     String msg = "You have already voted for this player.";
-                    e.getWhoClicked().sendMessage(ChatColor.DARK_AQUA + "[Reputation+]" + ChatColor.RED + msg);
+                    e.getWhoClicked().sendMessage(ChatColor.DARK_AQUA + "[Reputation+] " + ChatColor.RED + msg);
+                } else {
+                    MySQL.setReputation(uuidwhom, 1);
+                    MySQL.setDidVote(uuidwho, uuidwhom, (short) 1);
                 }
             }
-            if(e.getCurrentItem().getType().equals(Material.RED_TERRACOTTA)){
-                if (!thereis) {
-                    MySQL.setReputation(uuidwhom, -1);
-                    MySQL.setDidVote(uuidwho, uuidwhom, true);
-                } else {
+            if(clickeditem.equals(Material.RED_TERRACOTTA)){
+                if (yes == 1) {
                     String msg = "You have already voted for this player.";
-                    e.getWhoClicked().sendMessage(ChatColor.DARK_AQUA + "[Reputation+]" + ChatColor.RED + msg);
+                    e.getWhoClicked().sendMessage(ChatColor.DARK_AQUA + "[Reputation+] " + ChatColor.RED + msg);
+                } else {
+                    MySQL.setReputation(uuidwhom, 1);
+                    MySQL.setDidVote(uuidwho, uuidwhom, (short) 1);
                 }
             }
             e.setCancelled(true);

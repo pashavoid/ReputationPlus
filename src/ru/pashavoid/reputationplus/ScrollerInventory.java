@@ -14,30 +14,30 @@ import java.util.UUID;
 
 public class ScrollerInventory {
 
-    public ArrayList<Inventory> pages = new ArrayList<Inventory>();
+    public ArrayList<Inventory> pages = new ArrayList<Inventory>(); // 0
     public UUID id;
-    public int currpage = 0;
+    public static int currpage = 1;
     public static HashMap<UUID, ScrollerInventory> users = new HashMap<UUID, ScrollerInventory>();
     private Inventory page;
 
     public ScrollerInventory(ArrayList<ItemStack> items, String name, Player player){
 
+        createZero();
         this.id = UUID.randomUUID();
         page = getBlankPage(name);
-        if(!(page.firstEmpty() == 27)){
-            page.getItem(32).setAmount(0);
-        }
-        if(currpage == 0){
+
+        if(currpage == 1){
             page.getItem(30).setAmount(0);
         }
 
-        for(int i = 0; i < items.size(); i++){
-            if(page.firstEmpty() == 27){
+        for (ItemStack item : items) {
+            if (items.size() < 1 * currpage) {
+                page.getItem(32).setAmount(0);
                 pages.add(page);
                 page = getBlankPage(name);
-                page.addItem(items.get(i));
-            } else{
-                page.addItem(items.get(i));
+                page.addItem(item);
+            } else {
+                page.addItem(item);
             }
         }
         pages.add(page);
@@ -56,14 +56,21 @@ public class ScrollerInventory {
         ItemMeta meta = nextpage.getItemMeta();
         meta.setDisplayName(nextPageName);
         nextpage.setItemMeta(meta);
+        page.setItem(32, nextpage);
 
         ItemStack prevpage = new ItemStack(Material.ACACIA_BOAT, 1, (byte) 2);
         meta = prevpage.getItemMeta();
         meta.setDisplayName(previousPageName);
         prevpage.setItemMeta(meta);
-
         page.setItem(30, prevpage);
-        page.setItem(32, nextpage);
+
         return page;
+    }
+
+    private void createZero(){
+        if(pages.size() <= 0){
+            Inventory inv = null;
+            pages.add(inv);
+        }
     }
 }
