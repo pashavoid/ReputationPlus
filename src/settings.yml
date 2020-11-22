@@ -1,5 +1,8 @@
 #
-#     Reputation+ 1.0 beta
+#     Reputation+ 0.2
 #     Author by pashavoid
 #     File: settings.yml
 #
+
+settings:
+  lang: en

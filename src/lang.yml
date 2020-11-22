@@ -1,0 +1,28 @@
+#
+#     Reputation+ 0.2
+#     Author by pashavoid
+#     File: lang.yml
+#
+
+en:
+  lore: "Click on the player to interact with them"
+  namemaingui: "Players"
+  guiplayer: "Interact player"
+  itsyou: "You can't vote for yourself."
+  alreadyvote: "You have already voted for this player."
+  infoplayerrep: "Player reputation"
+  like: "Like"
+  dislike: "Dislike"
+  nextpage: "Next page"
+  prevpage: "Prev page"
+ru:
+  lore: "Нажмите на игрока, чтобы взамодействовать с ним"
+  namemaingui: "Игроки"
+  guiplayer: "Взаимодействие с игроком"
+  itsyou: "Вы не можете проголосовать за себя."
+  alreadyvote: "Вы уже голосовали за этого игрока."
+  infoplayerrep: "Репутация игрока"
+  like: "Лайк"
+  dislike: "Дизлайк"
+  nextpage: "След. страница"
+  prevpage: "Пред. страница"

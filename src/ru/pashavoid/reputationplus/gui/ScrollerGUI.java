@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import ru.pashavoid.reputationplus.ReputationPlus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +19,11 @@ public class ScrollerGUI {
     public UUID id;
     public int currpage = 0;
     public static HashMap<UUID, ScrollerGUI> users = new HashMap<UUID, ScrollerGUI>();
+    private ReputationPlus plugin;
 
-    public ScrollerGUI(ArrayList<ItemStack> items, String name, Player p){
+    public ScrollerGUI(ArrayList<ItemStack> items, String name, Player p, ReputationPlus instance){
+        this.plugin = instance;
+
         this.id = UUID.randomUUID();
         Inventory page = getBlankPage(name);
         for (ItemStack item : items) {
@@ -38,20 +42,17 @@ public class ScrollerGUI {
         users.put(p.getUniqueId(), this);
     }
 
-    public static final String nextPageName = ChatColor.AQUA + "Next Page";
-    public static final String previousPageName = ChatColor.AQUA + "Previous Page";
-
     private Inventory getBlankPage(String name){
         Inventory page = Bukkit.createInventory(null, 54, name);
 
         ItemStack nextpage =  new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1, (byte) 5);
         ItemMeta meta = nextpage.getItemMeta();
-        meta.setDisplayName(nextPageName);
+        meta.setDisplayName(ChatColor.AQUA + plugin.getLangConfig().getString(plugin.getLang() + ".nextpage"));
         nextpage.setItemMeta(meta);
 
         ItemStack prevpage = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1, (byte) 2);
         meta = prevpage.getItemMeta();
-        meta.setDisplayName(previousPageName);
+        meta.setDisplayName(ChatColor.AQUA + plugin.getLangConfig().getString(plugin.getLang() + ".prevpage"));
         prevpage.setItemMeta(meta);
 
 

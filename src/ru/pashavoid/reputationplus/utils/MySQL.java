@@ -1,7 +1,5 @@
 package ru.pashavoid.reputationplus.utils;
 
-import org.bukkit.Bukkit;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,24 +15,23 @@ import java.util.UUID;
 
 public class MySQL {
 
-    public static Connection connection;
-    private static ReputationPlus plugin;
-    static ConsoleCommandSender console = Bukkit.getConsoleSender();
+    public Connection connection;
+    private ReputationPlus plugin;
 
     public MySQL (ReputationPlus instance){
-        this.plugin = instance;
+        plugin = instance;
     }
 
-    private static File database;
-    private static FileConfiguration databaseConfig;
+    private File database;
+    private FileConfiguration databaseConfig;
 
     public static HashMap<UUID, Integer> cache = new HashMap<>();
 
     public MySQL(){
-
+        //
     }
 
-    public static void createDatabaseFile() {
+    public void createDatabaseFile() {
         database = new File(plugin.getDataFolder(), "database.yml");
         if (!database.exists()) {
             database.getParentFile().mkdirs();
@@ -53,7 +50,7 @@ public class MySQL {
         return this.databaseConfig;
     }
 
-    public static void connect() {
+    public void connect() {
         if (!isConnected()) {
             try {
                 createDatabaseFile();
@@ -70,7 +67,7 @@ public class MySQL {
         }
     }
 
-    public static void disconnect() {
+    public void disconnect() {
         if (isConnected()) {
             try {
                 connection.close();
@@ -80,41 +77,40 @@ public class MySQL {
         }
     }
 
-    public static boolean isConnected() {
+    public boolean isConnected() {
         return (connection != null);
     }
 
-    public static Connection getConnection() {
+    public Connection getConnection() {
         return connection;
     }
 
-    private static Boolean reputationExist() throws SQLException {
+    private Boolean reputationExist() throws SQLException {
         DatabaseMetaData dbm = connection.getMetaData();
         ResultSet rs = dbm.getTables(null, null, "reputation", null);
         return !rs.next();
     }
 
-    private static void createReputationTable() throws SQLException {
+    private void createReputationTable() throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS reputation (id INT NOT NULL AUTO_INCREMENT, UUID VARCHAR(36) NOT NULL, rep INT NOT NULL, PRIMARY KEY(`id`))");
         ps.executeUpdate();
     }
 
-    private static Boolean possibleExist() throws SQLException {
+    private Boolean possibleExist() throws SQLException {
         DatabaseMetaData dbm = connection.getMetaData();
         ResultSet rs = dbm.getTables(null, null, "possible", null);
         return !rs.next();
     }
 
-    private static void createPossibleTable() throws SQLException {
+    private void createPossibleTable() throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS possible (id INT NOT NULL AUTO_INCREMENT, uuidwho VARCHAR(36) NOT NULL, uuidwhom VARCHAR(36) NOT NULL, yes TINYINT NOT NULL, PRIMARY KEY(`id`))");
         ps.executeUpdate();
     }
 
 
-    public static void updateCache() throws SQLException {
+    public void updateCache() throws SQLException {
 
         Iterator<Map.Entry<UUID, Integer>> iterator = cache.entrySet().iterator();
-        Log log = new Log(plugin);
         for(int i = 0; ; i++){
             if(iterator.hasNext()){
                 Map.Entry<UUID, Integer> entry = iterator.next();
@@ -132,27 +128,27 @@ public class MySQL {
         cache.clear();
     }
 
-    private static PreparedStatement searchPlayer(UUID uuid) throws SQLException {
+    private PreparedStatement searchPlayer(UUID uuid) throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM reputation WHERE uuid = ?");
         ps.setString(1, String.valueOf(uuid));
         return ps;
     }
 
-    private static void addPlayer(UUID uuid, int reputation) throws SQLException {
+    private void addPlayer(UUID uuid, int reputation) throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("INSERT INTO reputation (id, uuid, rep) VALUES (NULL, ?, ?)");
         ps.setString(1, String.valueOf(uuid));
         ps.setInt(2, reputation);
         ps.executeUpdate();
     }
 
-    private static void updatePlayer(UUID uuid, int reputation) throws SQLException {
+    private void updatePlayer(UUID uuid, int reputation) throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("UPDATE reputation SET `rep` = ? WHERE `uuid` = ?");
         ps.setInt(1, reputation);
         ps.setString(2, String.valueOf(uuid));
         ps.executeUpdate();
     }
 
-    public static Integer getReputation(UUID uuid) throws SQLException {
+    public Integer getReputation(UUID uuid) throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM reputation WHERE uuid = ?");
         ps.setString(1, String.valueOf(uuid));
         ResultSet rs = ps.executeQuery();
@@ -165,7 +161,7 @@ public class MySQL {
         return null;
     }
 
-    public static void setReputation(UUID uuid, int rep) throws SQLException {
+    public void setReputation(UUID uuid, int rep) throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM reputation WHERE uuid = ?");
         ps.setString(1, String.valueOf(uuid));
         ResultSet rs = ps.executeQuery();
@@ -181,7 +177,7 @@ public class MySQL {
         }
     }
 
-    public static Short getDidVote(UUID uuidwho, UUID uuidwhom) throws SQLException {
+    public Short getDidVote(UUID uuidwho, UUID uuidwhom) throws SQLException {
         PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM possible WHERE uuidwho = ? AND uuidwhom = ?");
         ps.setString(1, String.valueOf(uuidwho));
         ps.setString(2, String.valueOf(uuidwhom));
@@ -193,7 +189,7 @@ public class MySQL {
         }
     }
 
-    public static void setDidVote(UUID uuidwho, UUID uuidwhom, short yes) throws SQLException {
+    public void setDidVote(UUID uuidwho, UUID uuidwhom, short yes) throws SQLException {
         if(getDidVote(uuidwho, uuidwhom) == 2){
             PreparedStatement ps = getConnection().prepareStatement("INSERT INTO possible (id, uuidwho, uuidwhom, yes) VALUES (NULL, ?, ?, ?)");
             ps.setString(1, String.valueOf(uuidwho));

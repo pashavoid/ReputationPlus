@@ -1,8 +1,8 @@
 name: ReputationPlus
 author: pashavoid
-description: Test Plugin
+description: Reputation for your server
 main: ru.pashavoid.reputationplus.ReputationPlus
-version: 1.1
+version: 0.2
 api-version: 1.16
 commands:
   reputation:

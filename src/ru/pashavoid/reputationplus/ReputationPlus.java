@@ -1,10 +1,8 @@
 package ru.pashavoid.reputationplus;
 
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import ru.pashavoid.reputationplus.utils.Log;
@@ -14,66 +12,80 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 
-public class ReputationPlus extends JavaPlugin implements Listener, CommandExecutor {
+public class ReputationPlus extends JavaPlugin {
 
-    public static ReputationPlus instance;
+    private ReputationPlus plugin;
+    private String tag = "[Reputation+]";
+    private Log log;
+    private MySQL mysql;
 
-    public FileConfiguration config = getConfig();
     private File settings;
     private FileConfiguration settingsConfig;
 
+    private File language;
+    private FileConfiguration langConfig;
+    private String lang;
+
     @Override
     public void onEnable() {
-        MySQL mysql = new MySQL(this);
-        instance = this;
-        MySQL.connect();
-        Log log = new Log(this);
-        log.sendApproved("[Reputation+]", "Successful initialization of the plugin");
+
+        plugin = this;
+        log = new Log(this, tag);
+
+        mysql = new MySQL(this);
+        mysql.connect();
+
+        log.sendApproved("Successful initialization of the plugin");
+        log.sendNote("Version: " + getDescription().getVersion() + " Author: " + getDescription().getAuthors());
+
+        createSettingsFile();
+        createLangFile();
+        lang = settingsConfig.getString("settings.lang");
 
         getCommand("reputation").setExecutor(new Commands(this));
         getServer().getPluginManager().registerEvents(new Events(this), this);
 
-        createSettingsFile();
-
-        log.sendNote("[Reputation+]", "Version: " + getDescription().getVersion() + " Author: " + getDescription().getAuthors());
-
-        BukkitScheduler scheduler = getServer().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(this, new Runnable() {
+        BukkitScheduler scheduler = plugin.getServer().getScheduler();
+        scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
             @Override
             public void run() {
                 try {
-                    MySQL.updateCache();
+                    mysql.updateCache();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                log.sendApproved("[Reputation+]", "Successful connection to the database. The plugin cache was cleared");
+                plugin.getLog().sendApproved("Successful connection to the database. The plugin cache was cleared");
             }
         }, 0L, 1200L);
     }
 
     @Override
     public void onDisable() {
-        Log log = new Log(this);
-
-        log.sendApproved("[Reputation+]", "Save database.yml, settings.yml");
 
         saveResource("database.yml", false);
         saveResource("settings.yml", false);
+        saveResource("lang.yml", false);
+        log.sendApproved("Save database.yml, settings.yml, lang.yml");
 
         try {
-            MySQL.updateCache();
-            log.sendApproved("[Reputation+]", "Successful connection to the database. The cache was moved to the database");
+            mysql.updateCache();
+            log.sendApproved("Successful connection to the database. The cache was moved to the database");
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        log.sendApproved("[Reputation+]", "Disabling the plugin");
-        MySQL.disconnect();
+        log.sendApproved("Disabling the plugin");
+        mysql.disconnect();
     }
 
     public FileConfiguration getSettings() {
         return this.settingsConfig;
     }
+    public String getLang() { return this.lang; }
+    public FileConfiguration getLangConfig() { return this.langConfig; }
+    public Log getLog() { return this.log; }
+    public MySQL getMysql() { return this.mysql; }
+    public ReputationPlus getPlugin() { return this.plugin; }
 
     private void createSettingsFile() {
         settings = new File(getDataFolder(), "settings.yml");
@@ -85,6 +97,21 @@ public class ReputationPlus extends JavaPlugin implements Listener, CommandExecu
         settingsConfig = new YamlConfiguration();
         try {
             settingsConfig.load(settings);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createLangFile() {
+        language = new File(getDataFolder(), "lang.yml");
+        if (!language.exists()) {
+            language.getParentFile().mkdirs();
+            saveResource("lang.yml", false);
+        }
+
+        langConfig = new YamlConfiguration();
+        try {
+            langConfig.load(language);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
