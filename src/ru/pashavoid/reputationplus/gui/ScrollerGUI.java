@@ -42,6 +42,7 @@ public class ScrollerGUI {
         users.put(p.getUniqueId(), this);
     }
 
+    @Deprecated
     private Inventory getBlankPage(String name){
         Inventory page = Bukkit.createInventory(null, 54, name);
 

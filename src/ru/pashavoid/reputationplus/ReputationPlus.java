@@ -5,8 +5,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import ru.pashavoid.reputationplus.utils.Database;
 import ru.pashavoid.reputationplus.utils.Log;
-import ru.pashavoid.reputationplus.utils.MySQL;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class ReputationPlus extends JavaPlugin {
     private ReputationPlus plugin;
     private String tag = "[Reputation+]";
     private Log log;
-    private MySQL mysql;
+    private Database database;
 
     private File settings;
     private FileConfiguration settingsConfig;
@@ -32,8 +32,8 @@ public class ReputationPlus extends JavaPlugin {
         plugin = this;
         log = new Log(this, tag);
 
-        mysql = new MySQL(this);
-        mysql.connect();
+        database = new Database(this);
+        database.connect();
 
         log.sendApproved("Successful initialization of the plugin");
         log.sendNote("Version: " + getDescription().getVersion() + " Author: " + getDescription().getAuthors());
@@ -44,19 +44,6 @@ public class ReputationPlus extends JavaPlugin {
 
         getCommand("reputation").setExecutor(new Commands(this));
         getServer().getPluginManager().registerEvents(new Events(this), this);
-
-        BukkitScheduler scheduler = plugin.getServer().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mysql.updateCache();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                plugin.getLog().sendApproved("Successful connection to the database. The plugin cache was cleared");
-            }
-        }, 0L, 1200L);
     }
 
     @Override
@@ -67,15 +54,8 @@ public class ReputationPlus extends JavaPlugin {
         saveResource("lang.yml", false);
         log.sendApproved("Save database.yml, settings.yml, lang.yml");
 
-        try {
-            mysql.updateCache();
-            log.sendApproved("Successful connection to the database. The cache was moved to the database");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
         log.sendApproved("Disabling the plugin");
-        mysql.disconnect();
+        database.disconnect();
     }
 
     public FileConfiguration getSettings() {
@@ -84,7 +64,7 @@ public class ReputationPlus extends JavaPlugin {
     public String getLang() { return this.lang; }
     public FileConfiguration getLangConfig() { return this.langConfig; }
     public Log getLog() { return this.log; }
-    public MySQL getMysql() { return this.mysql; }
+    public Database getMysql() { return this.database; }
     public ReputationPlus getPlugin() { return this.plugin; }
 
     private void createSettingsFile() {

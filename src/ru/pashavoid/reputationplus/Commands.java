@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import ru.pashavoid.reputationplus.gui.ScrollerGUI;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,15 +46,6 @@ public class Commands implements CommandExecutor, Listener {
                 }
             });
             inv = new ScrollerGUI(items, "[Reputation+] " + plugin.getLangConfig().getString(plugin.getLang() + ".namemaingui").replace("&", "§"), player, plugin.getPlugin());
-        } else {
-            if (args.length == 1 && args[0].equals("clearcache")) {
-                try {
-                    plugin.getMysql().updateCache();
-                    plugin.getLog().sendApproved("Cache was clear");
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return true;
     }

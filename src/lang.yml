@@ -1,5 +1,5 @@
 #
-#     Reputation+ 0.2
+#     Reputation+ 0.3
 #     Author by pashavoid
 #     File: lang.yml
 #
@@ -10,6 +10,7 @@ en:
   guiplayer: "Interact player"
   itsyou: "You can't vote for yourself."
   alreadyvote: "You have already voted for this player."
+  vote: "You voted."
   infoplayerrep: "Player reputation"
   like: "Like"
   dislike: "Dislike"
@@ -23,6 +24,7 @@ ru:
   alreadyvote: "Вы уже голосовали за этого игрока."
   infoplayerrep: "Репутация игрока"
   like: "Лайк"
+  vote: "Вы проголосовали."
   dislike: "Дизлайк"
   nextpage: "След. страница"
   prevpage: "Пред. страница"

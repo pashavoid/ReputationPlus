@@ -15,10 +15,10 @@ import java.util.List;
 
 public class PlayerGUI {
 
-    private final List<String> lore = new ArrayList<String>();
+    private List<String> lore = new ArrayList<String>();
     private ArrayList<ItemStack> items = new ArrayList<ItemStack>();
     public Inventory inv;
-    private ReputationPlus plugin;
+    private final ReputationPlus plugin;
 
     public PlayerGUI (Player player, ItemStack clickedItem, ReputationPlus instance) throws SQLException {
         this.plugin = instance;
@@ -29,7 +29,6 @@ public class PlayerGUI {
         SkullMeta skullhead = (SkullMeta) head.getItemMeta();
         skullhead.setDisplayName(clickedItem.getItemMeta().getDisplayName());
         Player o = Bukkit.getPlayer(clickedItem.getItemMeta().getDisplayName());
-        List<String> lore = new ArrayList<>();
         lore.add(plugin.getLangConfig().getString(plugin.getLang() + ".infoplayerrep").replace("&", "§") + ": " + plugin.getMysql().getReputation(o.getUniqueId()));
         skullhead.setLore(lore);
         skullhead.setOwningPlayer(o);

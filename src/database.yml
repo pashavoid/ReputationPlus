@@ -1,12 +1,11 @@
 #
-#     Reputation+ 0.2
+#     Reputation+ 0.3
 #     Author by pashavoid
 #     File: database.yml
 #
-# WARNING: The plugin only supports MySQL ;-(
-# If you test the plugin once, you don't need to specify the database.
-# All reputation is cached in memory and will be deleted when turned off.
 
+# Type: mysql / sqlite
+type: mysql
 # MySql IP address or domain
 host: localhost
 # MySQL name database

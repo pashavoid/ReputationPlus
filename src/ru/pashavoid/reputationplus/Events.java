@@ -73,19 +73,22 @@ public class Events implements Listener {
         }
         if(e.getView().getTitle().equals("[Reputation+] " + plugin.getLangConfig().getString(plugin.getLang() + ".guiplayer").replace("&", "§"))){
 
-            String name = e.getView().getItem(5).getItemMeta().getDisplayName();
-            UUID uuidwhom = players.get(name);
+            String name = e.getView().getItem(4).getItemMeta().getDisplayName();
             UUID uuidwho = e.getWhoClicked().getUniqueId();
+            UUID uuidwhom = players.get(name);
             if (e.getCurrentItem() == null || e.getCurrentItem().getType().equals(Material.AIR)) return;
             short yes = plugin.getMysql().getDidVote(uuidwho, uuidwhom);
             Material clickeditem = e.getCurrentItem().getType();
 
-            if(clickeditem.equals(Material.GREEN_TERRACOTTA) || clickeditem.equals(Material.RED_TERRACOTTA) && uuidwho == uuidwhom){
-                String itsyou = plugin.getLangConfig().getString(plugin.getLang() + ".itsyou").replace("&", "§");
-                e.getWhoClicked().sendMessage(ChatColor.AQUA + "[Reputation+] " + ChatColor.RED + itsyou);
-                e.setCancelled(true);
-                return;
+            if(clickeditem.equals(Material.GREEN_TERRACOTTA) || clickeditem.equals(Material.RED_TERRACOTTA)){
+                if(uuidwho == uuidwhom){
+                    String msg = plugin.getLangConfig().getString(plugin.getLang() + ".itsyou").replace("&", "§");
+                    e.getWhoClicked().sendMessage(ChatColor.AQUA + "[Reputation+] " + ChatColor.RED + msg);
+                    e.setCancelled(true);
+                    return;
+                }
             }
+
             if(clickeditem.equals(Material.GREEN_TERRACOTTA)){
                 if (yes == 1) {
                     String msg = plugin.getLangConfig().getString(plugin.getLang() + ".alreadyvote").replace("&", "§");
@@ -93,6 +96,8 @@ public class Events implements Listener {
                 } else {
                     plugin.getMysql().setReputation(uuidwhom, 1);
                     plugin.getMysql().setDidVote(uuidwho, uuidwhom, (short) 1);
+                    String msg = plugin.getLangConfig().getString(plugin.getLang() + ".vote").replace("&", "§");
+                    e.getWhoClicked().sendMessage(ChatColor.AQUA + "[Reputation+] " + ChatColor.GREEN + msg);
                 }
             }
             if(clickeditem.equals(Material.RED_TERRACOTTA)){
@@ -102,6 +107,8 @@ public class Events implements Listener {
                 } else {
                     plugin.getMysql().setReputation(uuidwhom, 1);
                     plugin.getMysql().setDidVote(uuidwho, uuidwhom, (short) 1);
+                    String msg = plugin.getLangConfig().getString(plugin.getLang() + ".vote").replace("&", "§");
+                    e.getWhoClicked().sendMessage(ChatColor.AQUA + "[Reputation+] " + ChatColor.GREEN + msg);
                 }
             }
             e.setCancelled(true);

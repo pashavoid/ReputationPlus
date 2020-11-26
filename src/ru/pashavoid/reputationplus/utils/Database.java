@@ -8,28 +8,85 @@ import ru.pashavoid.reputationplus.ReputationPlus;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
-public class MySQL {
+public class Database {
 
-    public Connection connection;
+    private Connection connection;
     private ReputationPlus plugin;
 
-    public MySQL (ReputationPlus instance){
-        plugin = instance;
+    public Database(ReputationPlus instance){
+        this.plugin = instance;
+    }
+
+    public Database() {
+        //
+    }
+
+    public void connect() {
+        if (!isConnected()) {
+            try {
+                createDatabaseFile();
+                if(databaseConfig.getString("type").equals("mysql")){
+                    connection = DriverManager.getConnection("jdbc:mysql://"
+                            + databaseConfig.getString("host")
+                            + ":" + databaseConfig.getString("port")
+                            + "/" + databaseConfig.getString("database"), databaseConfig.getString("username"), databaseConfig.getString("password"));
+                }
+
+                if(databaseConfig.getString("type").equals("sqlite")){
+                    connection = getSQLConnection();
+                }
+
+                if(reputationExist()){
+                    createReputationTable();
+                }
+                if(possibleExist()){
+                    createPossibleTable();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public Connection getSQLConnection() {
+        File dataFolder = new File(plugin.getDataFolder(), "reputation.db");
+        if (!dataFolder.exists()){
+            try {
+                dataFolder.createNewFile();
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.SEVERE, "File write error: reputation.db");
+            }
+        }
+        try {
+            if(connection != null && !connection.isClosed()){
+                return connection;
+            }
+            Class.forName("org.sqlite.JDBC");
+            connection = DriverManager.getConnection("jdbc:sqlite:" + dataFolder);
+            return connection;
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE,"SQLite exception on initialize", ex);
+        } catch (ClassNotFoundException ex) {
+            plugin.getLogger().log(Level.SEVERE, "You need the SQLite JBDC library. Put it in /lib folder.");
+        }
+        return null;
+    }
+
+    public void disconnect() {
+        if (isConnected()) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private File database;
     private FileConfiguration databaseConfig;
-
-    public static HashMap<UUID, Integer> cache = new HashMap<>();
-
-    public MySQL(){
-        //
-    }
 
     public void createDatabaseFile() {
         database = new File(plugin.getDataFolder(), "database.yml");
@@ -46,52 +103,12 @@ public class MySQL {
         }
     }
 
-    public FileConfiguration getDatabase() {
-        return this.databaseConfig;
-    }
-
-    public void connect() {
-        if (!isConnected()) {
-            try {
-                createDatabaseFile();
-                connection = DriverManager.getConnection("jdbc:mysql://"
-                        + databaseConfig.getString("host")
-                        + ":" + databaseConfig.getString("port")
-                        + "/" + databaseConfig.getString("database"), databaseConfig.getString("username"), databaseConfig.getString("password"));
-                if(reputationExist()){
-                    createReputationTable();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void disconnect() {
-        if (isConnected()) {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public boolean isConnected() {
-        return (connection != null);
-    }
-
-    public Connection getConnection() {
-        return connection;
-    }
-
-    private Boolean reputationExist() throws SQLException {
-        DatabaseMetaData dbm = connection.getMetaData();
-        ResultSet rs = dbm.getTables(null, null, "reputation", null);
-        return !rs.next();
-    }
-
     private void createReputationTable() throws SQLException {
+        if(databaseConfig.getString("type").equals("sqlite")){
+            PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS reputation (id INTEGER PRIMARY KEY AUTOINCREMENT, UUID VARCHAR(36) NOT NULL, rep INT NOT NULL)");
+            ps.executeUpdate();
+            return;
+        }
         PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS reputation (id INT NOT NULL AUTO_INCREMENT, UUID VARCHAR(36) NOT NULL, rep INT NOT NULL, PRIMARY KEY(`id`))");
         ps.executeUpdate();
     }
@@ -103,29 +120,28 @@ public class MySQL {
     }
 
     private void createPossibleTable() throws SQLException {
+        if(databaseConfig.getString("type").equals("sqlite")){
+            PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS possible (id INTEGER PRIMARY KEY AUTOINCREMENT, uuidwho VARCHAR(36) NOT NULL, uuidwhom VARCHAR(36) NOT NULL, yes TINYINT NOT NULL)");
+            ps.executeUpdate();
+            return;
+        }
         PreparedStatement ps = getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS possible (id INT NOT NULL AUTO_INCREMENT, uuidwho VARCHAR(36) NOT NULL, uuidwhom VARCHAR(36) NOT NULL, yes TINYINT NOT NULL, PRIMARY KEY(`id`))");
         ps.executeUpdate();
     }
 
-
-    public void updateCache() throws SQLException {
-
-        Iterator<Map.Entry<UUID, Integer>> iterator = cache.entrySet().iterator();
-        for(int i = 0; ; i++){
-            if(iterator.hasNext()){
-                Map.Entry<UUID, Integer> entry = iterator.next();
-                UUID uuid = entry.getKey();
-                int Reputation = entry.getValue();
-
-                ResultSet rs = searchPlayer(uuid).executeQuery();
-                if(!rs.next()){
-                    addPlayer(uuid, Reputation);
-                } else {
-                    updatePlayer(uuid, Reputation);
-                }
-            } else break;
-        }
-        cache.clear();
+    public FileConfiguration getDatabaseConfig() {
+        return this.databaseConfig;
+    }
+    public boolean isConnected() {
+        return (connection != null);
+    }
+    public Connection getConnection() {
+        return connection;
+    }
+    private Boolean reputationExist() throws SQLException {
+        DatabaseMetaData dbm = connection.getMetaData();
+        ResultSet rs = dbm.getTables(null, null, "reputation", null);
+        return !rs.next();
     }
 
     private PreparedStatement searchPlayer(UUID uuid) throws SQLException {
@@ -152,9 +168,6 @@ public class MySQL {
         PreparedStatement ps = getConnection().prepareStatement("SELECT * FROM reputation WHERE uuid = ?");
         ps.setString(1, String.valueOf(uuid));
         ResultSet rs = ps.executeQuery();
-        if(cache.get(uuid) != null){
-            return cache.get(uuid);
-        }
         if(rs.next()){
             return rs.getInt("rep");
         }
@@ -166,14 +179,15 @@ public class MySQL {
         ps.setString(1, String.valueOf(uuid));
         ResultSet rs = ps.executeQuery();
         if(rs.next()){
-            cache.put(uuid, rs.getInt("rep") + rep);
-            return;
-        }
-        if (cache.get(uuid) != null) {
-            cache.put(uuid, cache.get(uuid) + rep);
-            return;
+            PreparedStatement pst = getConnection().prepareStatement("UPDATE reputation SET rep = ? WHERE uuid = ?");
+            pst.setInt(1, rs.getInt("rep") + rep);
+            pst.setString(2, String.valueOf(uuid));
+            pst.executeUpdate();
         } else {
-            cache.put(uuid, 0);
+            PreparedStatement pst = getConnection().prepareStatement("INSERT INTO reputation (id, uuid, rep) VALUES (NULL, ?, ?)");
+            pst.setString(1, String.valueOf(uuid));
+            pst.setInt(2, rep);
+            pst.executeUpdate();
         }
     }
 
