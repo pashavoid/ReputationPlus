@@ -15,36 +15,36 @@ import java.util.List;
 
 public class PlayerGUI {
 
-    private List<String> lore = new ArrayList<String>();
-    private ArrayList<ItemStack> items = new ArrayList<ItemStack>();
-    public Inventory inv;
+    private final Inventory inv;
     private final ReputationPlus plugin;
 
-    public PlayerGUI (Player player, ItemStack clickedItem, ReputationPlus instance) throws SQLException {
+    public PlayerGUI(ItemStack clickedItem, ReputationPlus instance) throws SQLException {
         this.plugin = instance;
-
-        Inventory inv = Bukkit.createInventory(null, 9, "[Reputation+] " + plugin.getLangConfig().getString(plugin.getLang() + ".guiplayer").replace("&", "§"));
+        Inventory inv = Bukkit.createInventory(
+                null, 9, "[Reputation+] " + plugin.getLangConfig().getString(plugin.getLang() + ".guiplayer").replace("&", "§"));
+        List<String> lore = new ArrayList<String>();
+        Player o = Bukkit.getPlayer(clickedItem.getItemMeta().getDisplayName());
 
         ItemStack head = new ItemStack(Material.PLAYER_HEAD, 1);
         SkullMeta skullhead = (SkullMeta) head.getItemMeta();
         skullhead.setDisplayName(clickedItem.getItemMeta().getDisplayName());
-        Player o = Bukkit.getPlayer(clickedItem.getItemMeta().getDisplayName());
         lore.add(plugin.getLangConfig().getString(plugin.getLang() + ".infoplayerrep").replace("&", "§") + ": " + plugin.getMysql().getReputation(o.getUniqueId()));
         skullhead.setLore(lore);
         skullhead.setOwningPlayer(o);
         head.setItemMeta(skullhead);
-        inv.setItem(4, head);
 
         ItemStack like = new ItemStack(Material.GREEN_TERRACOTTA, 1);
         ItemMeta likemeta = like.getItemMeta();
         likemeta.setDisplayName(plugin.getLangConfig().getString(plugin.getLang() + ".like").replace("&", "§"));
         like.setItemMeta(likemeta);
-        inv.setItem(3, like);
 
         ItemStack dislike = new ItemStack(Material.RED_TERRACOTTA, 1);
         ItemMeta dislikemeta = like.getItemMeta();
         dislikemeta.setDisplayName(plugin.getLangConfig().getString(plugin.getLang() + ".dislike").replace("&", "§"));
         dislike.setItemMeta(dislikemeta);
+
+        inv.setItem(4, head);
+        inv.setItem(3, like);
         inv.setItem(5, dislike);
 
         this.inv = inv;

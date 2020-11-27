@@ -67,7 +67,7 @@ public class Events implements Listener {
             }
             if(e.getCurrentItem().getType().equals(Material.PLAYER_HEAD)) {
                 e.setCancelled(true);
-                playerGUI = new PlayerGUI(p, clickedItem, plugin);
+                playerGUI = new PlayerGUI(clickedItem, plugin);
                 p.openInventory(playerGUI.getInventory());
             }
         }

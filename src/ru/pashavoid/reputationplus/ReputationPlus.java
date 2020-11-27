@@ -1,21 +1,21 @@
 package ru.pashavoid.reputationplus;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 import ru.pashavoid.reputationplus.utils.Database;
 import ru.pashavoid.reputationplus.utils.Log;
+import ru.pashavoid.reputationplus.utils.Placeholders;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
 
 public class ReputationPlus extends JavaPlugin {
 
     private ReputationPlus plugin;
-    private String tag = "[Reputation+]";
+    private final String tag = "[Reputation+]";
     private Log log;
     private Database database;
 
@@ -44,16 +44,15 @@ public class ReputationPlus extends JavaPlugin {
 
         getCommand("reputation").setExecutor(new Commands(this));
         getServer().getPluginManager().registerEvents(new Events(this), this);
+
+        if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null){
+            new Placeholders(this).register();
+            log.sendNote("Support enabled PlaceholderAPI");
+        }
     }
 
     @Override
     public void onDisable() {
-
-        saveResource("database.yml", false);
-        saveResource("settings.yml", false);
-        saveResource("lang.yml", false);
-        log.sendApproved("Save database.yml, settings.yml, lang.yml");
-
         log.sendApproved("Disabling the plugin");
         database.disconnect();
     }
@@ -85,7 +84,7 @@ public class ReputationPlus extends JavaPlugin {
     private void createLangFile() {
         language = new File(getDataFolder(), "lang.yml");
         if (!language.exists()) {
-            language.getParentFile().mkdirs();
+            boolean file = language.getParentFile().mkdirs();
             saveResource("lang.yml", false);
         }
 
