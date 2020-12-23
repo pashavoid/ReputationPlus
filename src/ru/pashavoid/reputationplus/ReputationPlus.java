@@ -18,6 +18,7 @@ public class ReputationPlus extends JavaPlugin {
     private final String tag = "[Reputation+]";
     private Log log;
     private Database database;
+    private Events events;
 
     private File settings;
     private FileConfiguration settingsConfig;
@@ -42,8 +43,9 @@ public class ReputationPlus extends JavaPlugin {
         createLangFile();
         lang = settingsConfig.getString("settings.lang");
 
+        events = new Events(this);
         getCommand("reputation").setExecutor(new Commands(this));
-        getServer().getPluginManager().registerEvents(new Events(this), this);
+        getServer().getPluginManager().registerEvents(events, this);
 
         if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null){
             new Placeholders(this).register();
@@ -65,6 +67,9 @@ public class ReputationPlus extends JavaPlugin {
     public Log getLog() { return this.log; }
     public Database getMysql() { return this.database; }
     public ReputationPlus getPlugin() { return this.plugin; }
+    public Events getEvents(){
+        return this.events;
+    }
 
     private void createSettingsFile() {
         settings = new File(getDataFolder(), "settings.yml");
