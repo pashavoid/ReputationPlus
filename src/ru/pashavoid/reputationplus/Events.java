@@ -25,6 +25,9 @@ public class Events implements Listener {
     public Events(ReputationPlus plugin){
         this.plugin = plugin;
     }
+    public HashMap<String, UUID> getPlayers(){
+        return this.players;
+    }
 
     @EventHandler
     public void PlayerJoin(PlayerJoinEvent e) throws SQLException {
